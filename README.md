@@ -96,6 +96,21 @@ $offer = new PercentageDiscountOffer(10.0); // 10% discount
 $discountedProducts = $offer->apply($products);
 ```
 
+#### BuyOneGetHalfOffRedWidgetOffer
+Applies "Buy one red widget, get the second for half price" offer.
+
+```php
+use Acme\Basket\Offers\BuyOneGetHalfOffRedWidgetOffer;
+
+$offer = new BuyOneGetHalfOffRedWidgetOffer();
+$discountedProducts = $offer->apply($products);
+
+// Only affects products with both "red" and "widget" in the name
+// First red widget: full price
+// Second red widget: half price
+// Third and subsequent: full price
+```
+
 #### ThresholdDeliveryRule
 Provides free delivery above a certain threshold.
 
@@ -191,29 +206,33 @@ require_once 'vendor/autoload.php';
 use Acme\Basket\Basket;
 use Acme\Basket\Product;
 use Acme\Basket\Offers\PercentageDiscountOffer;
+use Acme\Basket\Offers\BuyOneGetHalfOffRedWidgetOffer;
 use Acme\Basket\DeliveryRules\ThresholdDeliveryRule;
 
 // Create product catalogue
 $catalogue = [
     new Product('APPLE', 'Apple', 1.50),
     new Product('BANANA', 'Banana', 0.75),
-    new Product('ORANGE', 'Orange', 2.00),
+    new Product('RED_WIDGET', 'Red Widget', 10.00),
+    new Product('BLUE_WIDGET', 'Blue Widget', 8.00),
 ];
 
 // Create delivery and offer strategies
 $deliveryRule = new ThresholdDeliveryRule(10.0, 2.0);
 $discountOffer = new PercentageDiscountOffer(15.0);
+$redWidgetOffer = new BuyOneGetHalfOffRedWidgetOffer();
 
 // Create basket with dependency injection
-$basket = new Basket($catalogue, [$deliveryRule], [$discountOffer]);
+$basket = new Basket($catalogue, [$deliveryRule], [$discountOffer, $redWidgetOffer]);
 
 // Add products by code
 $basket->add('APPLE');
+$basket->add('RED_WIDGET');
+$basket->add('RED_WIDGET'); // Second red widget gets half price
 $basket->add('BANANA');
-$basket->add('BANANA'); // Second banana
 
 // Get basket information
-echo "Total: $" . $basket->total() . "\n"; // Includes discounts and delivery
+echo "Total: $" . $basket->total() . "\n"; // Includes all discounts and delivery
 echo "Item count: " . $basket->itemCount() . "\n";
 echo "Total quantity: " . $basket->totalQuantity() . "\n";
 
@@ -225,6 +244,7 @@ $basket->clear();
 
 // Run examples
 php example-basket.php
+php example-red-widget-offer.php
 php example-domain.php
 ```
 
@@ -334,6 +354,7 @@ docker-compose run --rm quality
 ├── phpstan.neon          # PHPStan configuration
 ├── README.md             # This file
 ├── example-basket.php    # Example usage of domain-driven Basket
+├── example-red-widget-offer.php # Example of red widget offer
 ├── example-domain.php    # Example usage of domain types
 ├── Dockerfile            # Docker configuration with PHP 8.3 CLI
 ├── docker-compose.yml    # Docker Compose services
@@ -346,14 +367,16 @@ docker-compose run --rm quality
 │   ├── Offer.php         # Offer interface
 │   ├── DeliveryRule.php  # DeliveryRule interface
 │   ├── Offers/           # Offer implementations
-│   │   └── PercentageDiscountOffer.php
+│   │   ├── PercentageDiscountOffer.php
+│   │   └── BuyOneGetHalfOffRedWidgetOffer.php
 │   └── DeliveryRules/    # DeliveryRule implementations
 │       └── ThresholdDeliveryRule.php
 └── tests/                # Test files
     ├── BasketTest.php    # PHPUnit tests for domain-driven Basket
     ├── ProductTest.php   # Tests for Product value object
     ├── Offers/           # Tests for offer implementations
-    │   └── PercentageDiscountOfferTest.php
+    │   ├── PercentageDiscountOfferTest.php
+    │   └── BuyOneGetHalfOffRedWidgetOfferTest.php
     └── DeliveryRules/    # Tests for delivery rule implementations
         └── ThresholdDeliveryRuleTest.php
 ```
