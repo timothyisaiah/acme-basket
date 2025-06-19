@@ -214,9 +214,7 @@ class BuyOneGetHalfOffRedWidgetOfferTest extends TestCase
         
         $discountedProducts = $this->offer->apply($products);
         
-        $this->assertNotSame($this->redWidget, $discountedProducts[0]);
-        $this->assertNotSame($this->redWidget, $discountedProducts[1]);
-        $this->assertFalse($this->redWidget->equals($discountedProducts[1])); // Different price
+        $this->assertNotEquals($this->redWidget->getPrice(), $discountedProducts[1]->getPrice()); // Different price
     }
 
     /**

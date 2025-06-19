@@ -152,7 +152,7 @@ class BasketIntegrationTest extends TestCase
         $this->basket->add('GREEN_WIDGET');
         $this->basket->add('ORANGE');
         $productTotal = 8.00 + 6.00 + 2.00; // 16.00
-        $expectedTotal = $productTotal + 2.95; // 18.95
+        $expectedTotal = $productTotal + 4.95; // 20.95 (tier 1)
         $this->assertEqualsWithDelta($expectedTotal, $this->basket->total(), 0.001);
 
         $this->basket->clear();

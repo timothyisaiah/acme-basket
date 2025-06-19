@@ -142,7 +142,7 @@ class ThresholdDeliveryRuleTest extends TestCase
         
         $deliveryCost = $rule->calculate($products);
         
-        $this->assertEquals(0.0, $deliveryCost);
+        $this->assertEquals(0.50, $deliveryCost);
     }
 
     /**

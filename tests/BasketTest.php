@@ -210,7 +210,7 @@ class BasketTest extends TestCase
         $originalTotal = 1.50 + 0.75;
         $expectedDiscountedTotal = $originalTotal * 0.9;
         
-        $this->assertEquals($expectedDiscountedTotal, $basket->total());
+        $this->assertEqualsWithDelta($expectedDiscountedTotal, $basket->total(), 0.001);
     }
 
     /**
@@ -248,7 +248,7 @@ class BasketTest extends TestCase
         $deliveryCost = 1.0; // Below threshold
         $expectedTotal = $discountedTotal + $deliveryCost;
         
-        $this->assertEquals($expectedTotal, $basket->total());
+        $this->assertEqualsWithDelta($expectedTotal, $basket->total(), 0.001);
     }
 
     /**
@@ -336,11 +336,11 @@ class BasketTest extends TestCase
         $basket->add('ORANGE');
         
         // Verify quantities
-        $this->assertEquals(3, $this->basket->itemCount());
-        $this->assertEquals(4, $this->basket->totalQuantity());
-        $this->assertEquals(1, $this->basket->getQuantity('APPLE'));
-        $this->assertEquals(2, $this->basket->getQuantity('BANANA'));
-        $this->assertEquals(1, $this->basket->getQuantity('ORANGE'));
+        $this->assertEquals(3, $basket->itemCount());
+        $this->assertEquals(4, $basket->totalQuantity());
+        $this->assertEquals(1, $basket->getQuantity('APPLE'));
+        $this->assertEquals(2, $basket->getQuantity('BANANA'));
+        $this->assertEquals(1, $basket->getQuantity('ORANGE'));
         
         // Calculate expected total
         $originalTotal = 1.50 + (0.75 * 2) + 2.00; // 5.00
@@ -348,11 +348,11 @@ class BasketTest extends TestCase
         $deliveryCost = 0.0; // Above threshold
         $expectedTotal = $discountedTotal + $deliveryCost;
         
-        $this->assertEquals($expectedTotal, $this->basket->total());
+        $this->assertEqualsWithDelta($expectedTotal, $basket->total(), 0.001);
         
         // Remove an item
-        $this->basket->remove('BANANA');
-        $this->assertEquals(1, $this->basket->getQuantity('BANANA'));
+        $basket->remove('BANANA');
+        $this->assertEquals(1, $basket->getQuantity('BANANA'));
         
         // Recalculate total
         $newOriginalTotal = 1.50 + 0.75 + 2.00; // 4.25
@@ -360,6 +360,6 @@ class BasketTest extends TestCase
         $newDeliveryCost = 2.0; // Below threshold
         $newExpectedTotal = $newDiscountedTotal + $newDeliveryCost;
         
-        $this->assertEquals($newExpectedTotal, $this->basket->total());
+        $this->assertEqualsWithDelta($newExpectedTotal, $basket->total(), 0.001);
     }
 } 

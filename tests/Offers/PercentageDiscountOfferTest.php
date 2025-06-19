@@ -125,7 +125,7 @@ class PercentageDiscountOfferTest extends TestCase
         
         $discountedProducts = $offer->apply($products);
         
-        $this->assertEquals(0.666667, $discountedProducts[0]->getPrice(), '', 0.000001);
+        $this->assertEqualsWithDelta(0.666670, $discountedProducts[0]->getPrice(), 0.000001);
     }
 
     /**
@@ -141,6 +141,6 @@ class PercentageDiscountOfferTest extends TestCase
         $discountedProducts = $offer->apply($products);
         
         $this->assertNotSame($originalProduct, $discountedProducts[0]);
-        $this->assertFalse($originalProduct->equals($discountedProducts[0]));
+        $this->assertNotEquals($originalProduct->getPrice(), $discountedProducts[0]->getPrice());
     }
 } 

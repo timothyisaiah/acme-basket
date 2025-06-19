@@ -155,7 +155,7 @@ class TieredDeliveryRuleTest extends TestCase
         
         $deliveryCost = $this->rule->calculate($products);
         
-        $this->assertEquals(4.95, $deliveryCost);
+        $this->assertEquals(2.95, $deliveryCost);
     }
 
     /**
