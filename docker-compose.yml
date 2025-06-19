@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: acme-basket-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - ./vendor:/var/www/html/vendor
+    environment:
+      - PHP_IDE_CONFIG=serverName=acme-basket
+    command: php -S 0.0.0.0:8000
+    networks:
+      - acme-basket-network
+
+  test:
+    build: .
+    container_name: acme-basket-test
+    volumes:
+      - .:/var/www/html
+      - ./vendor:/var/www/html/vendor
+    environment:
+      - PHP_IDE_CONFIG=serverName=acme-basket
+    command: composer install && composer test
+    networks:
+      - acme-basket-network
+
+  phpstan:
+    build: .
+    container_name: acme-basket-phpstan
+    volumes:
+      - .:/var/www/html
+      - ./vendor:/var/www/html/vendor
+    environment:
+      - PHP_IDE_CONFIG=serverName=acme-basket
+    command: composer install && composer phpstan
+    networks:
+      - acme-basket-network
+
+  quality:
+    build: .
+    container_name: acme-basket-quality
+    volumes:
+      - .:/var/www/html
+      - ./vendor:/var/www/html/vendor
+    environment:
+      - PHP_IDE_CONFIG=serverName=acme-basket
+    command: composer install && composer quality
+    networks:
+      - acme-basket-network
+
+networks:
+  acme-basket-network:
+    driver: bridge 

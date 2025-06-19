@@ -5,12 +5,106 @@ A PHP basket implementation with PSR-4 autoloading using Composer.
 ## Features
 
 - PSR-4 autoloading with Composer
-- Basket class with basic shopping cart functionality
+- Domain-driven design with immutable value objects
+- Dependency injection and strategy patterns
+- Basket class with product catalogue, delivery rules, and offers
 - Comprehensive test suite with PHPUnit
+- Static analysis with PHPStan
 - Add/remove items with quantities
-- Calculate totals
+- Calculate totals with discounts and delivery
 - Clear basket functionality
 - Docker support with PHP 8.3 CLI and xdebug
+
+## Core Domain Types
+
+The application implements a domain-driven design with the following core types:
+
+### Product (Value Object)
+Immutable value object representing a product with code, name, and price.
+
+```php
+use Acme\Basket\Product;
+
+$apple = new Product('APPLE', 'Apple', 1.50);
+echo $apple->getCode(); // 'APPLE'
+echo $apple->getName(); // 'Apple'
+echo $apple->getPrice(); // 1.50
+echo $apple; // 'Apple (APPLE)'
+```
+
+### Basket (Domain Service)
+Domain-driven basket implementation using dependency injection and strategy patterns.
+
+```php
+use Acme\Basket\Basket;
+use Acme\Basket\Product;
+use Acme\Basket\Offers\PercentageDiscountOffer;
+use Acme\Basket\DeliveryRules\ThresholdDeliveryRule;
+
+// Create catalogue
+$catalogue = [
+    new Product('APPLE', 'Apple', 1.50),
+    new Product('BANANA', 'Banana', 0.75),
+];
+
+// Create strategies
+$deliveryRule = new ThresholdDeliveryRule(10.0, 2.0);
+$offer = new PercentageDiscountOffer(15.0);
+
+// Create basket with dependency injection
+$basket = new Basket($catalogue, [$deliveryRule], [$offer]);
+
+// Use basket
+$basket->add('APPLE');
+$basket->add('BANANA');
+$total = $basket->total(); // Includes discounts and delivery
+```
+
+### Offer (Interface)
+Interface for applying offers to products.
+
+```php
+use Acme\Basket\Offer;
+
+interface Offer
+{
+    public function apply(array $products): array;
+}
+```
+
+### DeliveryRule (Interface)
+Interface for calculating delivery costs.
+
+```php
+use Acme\Basket\DeliveryRule;
+
+interface DeliveryRule
+{
+    public function calculate(array $products): float;
+}
+```
+
+### Example Implementations
+
+#### PercentageDiscountOffer
+Applies a percentage discount to all products.
+
+```php
+use Acme\Basket\Offers\PercentageDiscountOffer;
+
+$offer = new PercentageDiscountOffer(10.0); // 10% discount
+$discountedProducts = $offer->apply($products);
+```
+
+#### ThresholdDeliveryRule
+Provides free delivery above a certain threshold.
+
+```php
+use Acme\Basket\DeliveryRules\ThresholdDeliveryRule;
+
+$rule = new ThresholdDeliveryRule(50.0, 5.0); // Free delivery over $50
+$deliveryCost = $rule->calculate($products);
+```
 
 ## Installation
 
@@ -42,6 +136,16 @@ The project includes Docker support with PHP 8.3 CLI, Composer, and xdebug enabl
    docker-compose run --rm test
    ```
 
+4. Run static analysis:
+   ```bash
+   docker-compose run --rm phpstan
+   ```
+
+5. Run quality checks (tests + static analysis):
+   ```bash
+   docker-compose run --rm quality
+   ```
+
 #### Using the Docker Script
 
 For convenience, you can use the provided script:
@@ -59,6 +163,12 @@ chmod +x docker-run.sh
 # Run tests
 ./docker-run.sh test
 
+# Run static analysis
+./docker-run.sh phpstan
+
+# Run quality checks
+./docker-run.sh quality
+
 # Open shell in container
 ./docker-run.sh shell
 
@@ -71,14 +181,65 @@ chmod +x docker-run.sh
 
 ## Usage
 
+### Domain-Driven Basket Usage
+
 ```php
 <?php
 
 require_once 'vendor/autoload.php';
 
 use Acme\Basket\Basket;
+use Acme\Basket\Product;
+use Acme\Basket\Offers\PercentageDiscountOffer;
+use Acme\Basket\DeliveryRules\ThresholdDeliveryRule;
 
-$basket = new Basket();
+// Create product catalogue
+$catalogue = [
+    new Product('APPLE', 'Apple', 1.50),
+    new Product('BANANA', 'Banana', 0.75),
+    new Product('ORANGE', 'Orange', 2.00),
+];
+
+// Create delivery and offer strategies
+$deliveryRule = new ThresholdDeliveryRule(10.0, 2.0);
+$discountOffer = new PercentageDiscountOffer(15.0);
+
+// Create basket with dependency injection
+$basket = new Basket($catalogue, [$deliveryRule], [$discountOffer]);
+
+// Add products by code
+$basket->add('APPLE');
+$basket->add('BANANA');
+$basket->add('BANANA'); // Second banana
+
+// Get basket information
+echo "Total: $" . $basket->total() . "\n"; // Includes discounts and delivery
+echo "Item count: " . $basket->itemCount() . "\n";
+echo "Total quantity: " . $basket->totalQuantity() . "\n";
+
+// Remove items
+$basket->remove('BANANA');
+
+// Clear basket
+$basket->clear();
+
+// Run examples
+php example-basket.php
+php example-domain.php
+```
+
+### Legacy Basket Usage
+
+The original basket implementation is still available as `LegacyBasket`:
+
+```php
+<?php
+
+require_once 'vendor/autoload.php';
+
+use Acme\Basket\LegacyBasket;
+
+$basket = new LegacyBasket();
 
 // Add items to the basket
 $basket->addItem('Apple', 1.50);
@@ -102,13 +263,13 @@ $basket->clear();
 Run the test suite:
 
 ```bash
-./vendor/bin/phpunit
+composer test
 ```
 
 Or with coverage:
 
 ```bash
-./vendor/bin/phpunit --coverage-html coverage
+composer test:coverage
 ```
 
 ### Docker Testing
@@ -117,21 +278,107 @@ Or with coverage:
 docker-compose run --rm test
 ```
 
+## Static Analysis
+
+### Local PHPStan
+
+Run static analysis:
+
+```bash
+composer phpstan
+```
+
+Generate baseline (to ignore existing errors):
+
+```bash
+composer phpstan:baseline
+```
+
+### Docker PHPStan
+
+```bash
+docker-compose run --rm phpstan
+```
+
+## Quality Checks
+
+Run both tests and static analysis:
+
+### Local
+
+```bash
+composer quality
+```
+
+### Docker
+
+```bash
+docker-compose run --rm quality
+```
+
+## Available Composer Scripts
+
+- `composer test` - Run PHPUnit tests
+- `composer test:coverage` - Run tests with HTML coverage report
+- `composer test:coverage-text` - Run tests with text coverage report
+- `composer phpstan` - Run PHPStan static analysis
+- `composer phpstan:baseline` - Generate PHPStan baseline
+- `composer check` - Run PHPStan and tests
+- `composer quality` - Run PHPStan and tests with coverage
+
 ## Project Structure
 
 ```
 ├── composer.json          # Composer configuration with PSR-4 autoloading
 ├── phpunit.xml           # PHPUnit configuration
+├── phpstan.neon          # PHPStan configuration
 ├── README.md             # This file
+├── example-basket.php    # Example usage of domain-driven Basket
+├── example-domain.php    # Example usage of domain types
 ├── Dockerfile            # Docker configuration with PHP 8.3 CLI
 ├── docker-compose.yml    # Docker Compose services
 ├── docker-run.sh         # Convenience script for Docker commands
 ├── .dockerignore         # Docker build exclusions
 ├── src/                  # Source code
-│   └── Basket.php        # Main Basket class
+│   ├── Basket.php        # Domain-driven Basket class
+│   ├── LegacyBasket.php  # Original basket implementation
+│   ├── Product.php       # Product value object
+│   ├── Offer.php         # Offer interface
+│   ├── DeliveryRule.php  # DeliveryRule interface
+│   ├── Offers/           # Offer implementations
+│   │   └── PercentageDiscountOffer.php
+│   └── DeliveryRules/    # DeliveryRule implementations
+│       └── ThresholdDeliveryRule.php
 └── tests/                # Test files
-    └── BasketTest.php    # PHPUnit tests for Basket class
+    ├── BasketTest.php    # PHPUnit tests for domain-driven Basket
+    ├── ProductTest.php   # Tests for Product value object
+    ├── Offers/           # Tests for offer implementations
+    │   └── PercentageDiscountOfferTest.php
+    └── DeliveryRules/    # Tests for delivery rule implementations
+        └── ThresholdDeliveryRuleTest.php
 ```
+
+## Design Patterns Used
+
+### Dependency Injection
+- Basket constructor accepts catalogue, delivery rules, and offers
+- Dependencies are injected rather than created internally
+- Enables easy testing and configuration
+
+### Strategy Pattern
+- `Offer` and `DeliveryRule` interfaces define strategies
+- Different implementations can be swapped easily
+- Multiple strategies can be applied (e.g., multiple offers)
+
+### Value Objects
+- `Product` is an immutable value object
+- Equality based on business identity (product code)
+- Self-validating with constructor validation
+
+### Domain-Driven Design
+- Clear separation of domain concepts
+- Rich domain model with business logic
+- Ubiquitous language in method names
 
 ## Requirements
 

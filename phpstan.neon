@@ -1,0 +1,46 @@
+parameters:
+    # Level 8 is the highest level - very strict
+    level: 8
+    
+    # Paths to analyze
+    paths:
+        - src/
+        - tests/
+    
+    # Exclude paths
+    excludePaths:
+        - vendor/
+    
+    # Check missing calls
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: true
+    
+    # Ignore errors (if any specific ones need to be ignored)
+    ignoreErrors:
+        # Add specific error patterns here if needed
+        # - '#Call to an undefined method [a-zA-Z0-9\\_]+::[a-zA-Z0-9\\_]+\(\)#'
+    
+    # Include paths for autoloading
+    scanFiles:
+        - vendor/autoload.php
+    
+    # PHP version
+    phpVersion: 80300
+    
+    # Treat missing return type as error
+    treatPhpDocTypesAsCertain: true
+    
+    # Check for unused code
+    checkUnusedCode: true
+    
+    # Check for dead code
+    checkMissingCallableSignature: true
+    
+    # Check for missing type hints
+    checkMissingIterableValueType: true
+    
+    # Check for missing callable signature
+    checkMissingCallableSignature: true
+    
+    # Check for missing generic class in non-generic object type
+    checkGenericClassInNonGenericObjectType: true 
