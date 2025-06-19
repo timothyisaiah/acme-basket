@@ -92,10 +92,6 @@ final class Basket
     {
         $products = $this->getProductsInBasket();
         
-        if (empty($products)) {
-            return 0.0;
-        }
-
         // Apply offers to get discounted products
         $discountedProducts = $this->applyOffers($products);
         
@@ -158,6 +154,14 @@ final class Basket
     public function getQuantity(string $productCode): int
     {
         return $this->items[$productCode] ?? 0;
+    }
+
+    /**
+     * Check if the basket is empty
+     */
+    public function isEmpty(): bool
+    {
+        return empty($this->items);
     }
 
     /**

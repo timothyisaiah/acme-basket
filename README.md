@@ -121,6 +121,21 @@ $rule = new ThresholdDeliveryRule(50.0, 5.0); // Free delivery over $50
 $deliveryCost = $rule->calculate($products);
 ```
 
+#### TieredDeliveryRule
+Calculates delivery based on tiered pricing thresholds.
+
+```php
+use Acme\Basket\DeliveryRules\TieredDeliveryRule;
+
+$rule = new TieredDeliveryRule();
+$deliveryCost = $rule->calculate($products);
+
+// Delivery costs:
+// - < $50: $4.95
+// - < $90: $2.95
+// - >= $90: Free
+```
+
 ## Installation
 
 ### Local Installation
@@ -208,6 +223,7 @@ use Acme\Basket\Product;
 use Acme\Basket\Offers\PercentageDiscountOffer;
 use Acme\Basket\Offers\BuyOneGetHalfOffRedWidgetOffer;
 use Acme\Basket\DeliveryRules\ThresholdDeliveryRule;
+use Acme\Basket\DeliveryRules\TieredDeliveryRule;
 
 // Create product catalogue
 $catalogue = [
@@ -218,12 +234,12 @@ $catalogue = [
 ];
 
 // Create delivery and offer strategies
-$deliveryRule = new ThresholdDeliveryRule(10.0, 2.0);
+$tieredDelivery = new TieredDeliveryRule();
 $discountOffer = new PercentageDiscountOffer(15.0);
 $redWidgetOffer = new BuyOneGetHalfOffRedWidgetOffer();
 
 // Create basket with dependency injection
-$basket = new Basket($catalogue, [$deliveryRule], [$discountOffer, $redWidgetOffer]);
+$basket = new Basket($catalogue, [$tieredDelivery], [$discountOffer, $redWidgetOffer]);
 
 // Add products by code
 $basket->add('APPLE');
@@ -245,6 +261,7 @@ $basket->clear();
 // Run examples
 php example-basket.php
 php example-red-widget-offer.php
+php example-tiered-delivery.php
 php example-domain.php
 ```
 
@@ -355,6 +372,7 @@ docker-compose run --rm quality
 ├── README.md             # This file
 ├── example-basket.php    # Example usage of domain-driven Basket
 ├── example-red-widget-offer.php # Example of red widget offer
+├── example-tiered-delivery.php  # Example of tiered delivery rule
 ├── example-domain.php    # Example usage of domain types
 ├── Dockerfile            # Docker configuration with PHP 8.3 CLI
 ├── docker-compose.yml    # Docker Compose services
@@ -370,7 +388,8 @@ docker-compose run --rm quality
 │   │   ├── PercentageDiscountOffer.php
 │   │   └── BuyOneGetHalfOffRedWidgetOffer.php
 │   └── DeliveryRules/    # DeliveryRule implementations
-│       └── ThresholdDeliveryRule.php
+│       ├── ThresholdDeliveryRule.php
+│       └── TieredDeliveryRule.php
 └── tests/                # Test files
     ├── BasketTest.php    # PHPUnit tests for domain-driven Basket
     ├── ProductTest.php   # Tests for Product value object
@@ -378,7 +397,8 @@ docker-compose run --rm quality
     │   ├── PercentageDiscountOfferTest.php
     │   └── BuyOneGetHalfOffRedWidgetOfferTest.php
     └── DeliveryRules/    # Tests for delivery rule implementations
-        └── ThresholdDeliveryRuleTest.php
+        ├── ThresholdDeliveryRuleTest.php
+        └── TieredDeliveryRuleTest.php
 ```
 
 ## Design Patterns Used

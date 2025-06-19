@@ -31,15 +31,12 @@ final class BuyOneGetHalfOffRedWidgetOffer implements Offer
             if ($this->isRedWidget($product)) {
                 $redWidgetCount++;
                 
-                if ($redWidgetCount === 1) {
-                    // First red widget - full price
+                if ($redWidgetCount % 2 === 1) {
+                    // Odd-numbered red widgets (1st, 3rd, 5th, etc.) - full price
                     $discountedProducts[] = $product;
-                } elseif ($redWidgetCount === 2) {
-                    // Second red widget - half price
-                    $discountedProducts[] = $this->createDiscountedProduct($product, 0.5);
                 } else {
-                    // Third and subsequent red widgets - full price
-                    $discountedProducts[] = $product;
+                    // Even-numbered red widgets (2nd, 4th, 6th, etc.) - half price
+                    $discountedProducts[] = $this->createDiscountedProduct($product, 0.5);
                 }
             } else {
                 // Non-red widget products - unchanged
